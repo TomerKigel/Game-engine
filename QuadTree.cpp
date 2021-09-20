@@ -215,7 +215,10 @@ void QuadTree::QueryNodes()
 		{
 			for (short p = 0; p < i; p++)
 			{
-				Activatintrsct(testset[i], testset[p]);
+				if ((*testset[i] -= *testset[p]) > 0) {
+					testset[i]->intersection(testset[p]);
+					testset[p]->intersection(testset[i]);
+				}
 			}
 
 		}
@@ -229,7 +232,10 @@ void QuadTree::QueryRangeByObj(std::vector<AABB> *lst)
 		root->QueryRange(*lst->at(i).getAABB(), testset);
 		for (short p = 0; p < i; p++)
 		{
-			Activatintrsct(testset[i], testset[p]);
+			if ((*testset[i] -= *testset[p]) > 0) {
+				testset[i]->intersection(testset[p]);
+				testset[p]->intersection(testset[i]);
+			}
 		}
 	}
 }

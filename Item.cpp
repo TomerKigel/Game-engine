@@ -4,7 +4,7 @@
 
 Item::Item(AABB range, std::shared_ptr<sf::RenderWindow> window, std::shared_ptr<sf::Texture> txt)
 {
-	space = range;
+	setAABB(range);
 	sf::Vector2f cor(range.GetTL().GetX(), range.GetTL().GetY());
 	if (txt == nullptr)
 	{
@@ -13,7 +13,7 @@ Item::Item(AABB range, std::shared_ptr<sf::RenderWindow> window, std::shared_ptr
 	}
 	else
 	{
-		mdisp = std::make_shared<Graphics>(cor, txt, window,&space);
+		mdisp = std::make_shared<Graphics>(cor, txt, window,getAABB());
 	}
 	refreshLastSpace();
 	PhysicsStats pps;
@@ -25,13 +25,12 @@ Item::Item(AABB range, std::shared_ptr<sf::RenderWindow> window, std::shared_ptr
 	pps.yspeed = -10;
 	ph.setObjectsParameters(pps);
 	animantioncooldown.SetTimerMaxAsSeconds(0.1);
-	space.SetOwner(this);
 }
 
 void Item::draw()
 {
 	refreshLastSpace();
-	sf::Vector2f p(space.GetTL().GetX(), space.GetTL().GetY());
+	sf::Vector2f p((*getAABB()).GetTL().GetX(), (*getAABB()).GetTL().GetY());
 	refreshgraphics(p);
 	if (animantioncooldown.IsTimeUp()) {
 		mdisp->switchToNextFrame();
@@ -57,27 +56,28 @@ Item::~Item()
 }
 
 
-void Item::intersection(Object *obj)
+bool Item::intersection(AABB *ab)
 {
+	Object* obj = static_cast<Object*>(ab);
 	switch (obj->reType())
 	{
 	case ply:
 		destroy();
 		break;
 	case sttc:
-		AABB *t = this->getSpace();
 		short dir = 0;
 		double overlap = 0;
 		StaticObject *sptr = dynamic_cast<StaticObject*>(obj);
-		dir = Lastspace.WIRTTO(*sptr->getSpace());
-		overlap = getSpace()->Overlap(*sptr->getSpace(), dir);
+		dir = Lastspace.WIRTTO(*sptr->getAABB());
+		overlap = getAABB()->Overlap(*sptr->getAABB(), dir);
 		PhysicsIntersection(dir, overlap);
 		break;
 	}
+	return true;
 }
 
 void Item::Move(double xspd, double yspd)
 {
-	space.SetTL(double(space.GetTL().GetX() + xspd), double(space.GetTL().GetY() + yspd));
-	space.SetBR(double(space.GetBR().GetX() + xspd), double(space.GetBR().GetY() + yspd));
+	SetTL(double(GetTL().GetX() + xspd), double(GetTL().GetY() + yspd));
+	SetBR(double(GetBR().GetX() + xspd), double(GetBR().GetY() + yspd));
 }

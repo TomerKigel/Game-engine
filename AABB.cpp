@@ -1,20 +1,16 @@
 #include "AABB.h"
-#include "Movable.h"
 #include "Mat.h"
-
 #define PI 3.14159265
 
-AABB::AABB(double tlx, double tly, double brx, double bry, Object *owner)
+AABB::AABB(double tlx, double tly, double brx, double bry)
 {
-	ownerptr = owner;
 	TL = Point(tlx,tly);
 	BR = Point(brx, bry);
 }
 
 
-AABB::AABB(Point tl, Point br, Object *owner)
+AABB::AABB(Point tl, Point br)
 {
-	ownerptr = owner;
 	TL = tl;
 	BR = br;
 
@@ -94,6 +90,13 @@ void AABB::operator=(AABB &origin)
 	BR = origin.BR;
 }
 
+void AABB::setAABB(AABB &origin)
+{
+	TL = origin.TL;
+	BR = origin.BR;
+}
+
+
 void AABB::operator*=(double f)
 {
 	Point ttl = TL;
@@ -115,10 +118,10 @@ void AABB::SetBR(double x, double y)
 	BR.SetY(y);
 }
 
-void AABB::SetOwner(Object *ptr)
-{
-	ownerptr = ptr;
-}
+//void AABB::SetOwner(Object *ptr)
+//{
+//	ownerptr = ptr;
+//}
 
 AABB *AABB::getAABB()
 {
@@ -320,3 +323,9 @@ double AABB::Overlap(AABB t,short direction)
 		return overlap * (overlap > 0);
 	}
 }
+
+bool AABB::intersection(AABB *range) {
+	if (this == range)
+		return true;
+	else return false;
+};

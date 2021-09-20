@@ -7,8 +7,8 @@
 
 void Skill::Move(double xspd, double yspd)
 {
-	space.SetTL(double(space.GetTL().GetX() + xspd), double(space.GetTL().GetY() + yspd));
-	space.SetBR(double(space.GetBR().GetX() + xspd), double(space.GetBR().GetY() + yspd));
+	SetTL(double(GetTL().GetX() + xspd), double(GetTL().GetY() + yspd));
+	SetBR(double(GetBR().GetX() + xspd), double(GetBR().GetY() + yspd));
 }
 
 Skill::Skill(AABB range, double cooldown, std::shared_ptr<sf::RenderWindow> window, std::shared_ptr<sf::Texture> txt, std::shared_ptr<Object> o)
@@ -24,14 +24,13 @@ Skill::Skill(AABB range, double cooldown, std::shared_ptr<sf::RenderWindow> wind
 		AABB *t = new AABB(0,0,33,50);
 		mdisp = std::make_shared<Graphics>(cor, txt, window, t);
 	}
-	space = range;
+	setAABB(range);
 	refreshLastSpace();
 	owner = o;
 	skilltype = melee;
 	cd.SetTimerMaxAsSeconds(cooldown);
 	animantioncooldown.SetTimerMaxAsSeconds(0.025);
 	timetolive.SetTimerMaxAsSeconds(0.1);
-	space.SetOwner(this);
 }
 
 void Skill::isTimeToDie()
@@ -40,8 +39,9 @@ void Skill::isTimeToDie()
 		destroy();
 }
 
-void Skill::intersection(Object *obj)
+bool Skill::intersection(AABB *ab)
 {
+	Object* obj = static_cast<Object*>(ab);
 	switch (obj->reType())
 	{
 	case ply:
@@ -69,12 +69,13 @@ void Skill::intersection(Object *obj)
 			break;
 		}
 	}
+	return true;
 }
 
 void Skill::draw()
 {
 		refreshLastSpace();
-		sf::Vector2f p(space.GetTL().GetX(), space.GetTL().GetY());
+		sf::Vector2f p(GetTL().GetX(), GetTL().GetY());
 		refreshgraphics(p);
 		if (animantioncooldown.IsTimeUp()) {
 			mdisp->switchToNextFrame();
@@ -102,14 +103,14 @@ void Skill::UpdatePRTO()
 		case mnstr:
 		{
 			std::shared_ptr<Monster> t = std::dynamic_pointer_cast<Monster>(owner);
-			ab = t->getSpace();
+			ab = t->getAABB();
 			direction = t->mnstrstate.looking_state;
 			break;
 		}
 		case ply:
 		{
 			std::shared_ptr<Player> m = std::dynamic_pointer_cast<Player>(owner);
-			ab = m->getSpace();
+			ab = m->getAABB();
 			direction = m->reState().looking_state;
 			break;
 		}
@@ -121,14 +122,14 @@ void Skill::UpdatePRTO()
 		if (mdisp->reDir() == left) {
 			mdisp->FlipHorizontali();
 		}
-		Move(ab->GetTL().GetX() - space.GetBR().GetX(), ab->GetBR().GetY() - space.GetBR().GetY());
+		Move(ab->GetTL().GetX() - GetBR().GetX(), ab->GetBR().GetY() - GetBR().GetY());
 	}
 	else if (direction == lookingright)
 	{
 		if (mdisp->reDir() == right) {
 			mdisp->FlipHorizontali();
 		}
-		Move(ab->GetBR().GetX() - space.GetTL().GetX(), ab->GetBR().GetY() - space.GetBR().GetY());
+		Move(ab->GetBR().GetX() - GetTL().GetX(), ab->GetBR().GetY() - GetBR().GetY());
 	}
 }
 

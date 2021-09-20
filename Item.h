@@ -54,7 +54,7 @@ public:
 	//
 	//\brief   resolves intersection with different object types								
 	////////////////////////////////////////////////////////////////////////////////////////
-	void intersection(Object *obj);
+	bool intersection(AABB *obj);
 
 	~Item();
 };

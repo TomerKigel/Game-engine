@@ -14,12 +14,6 @@ GameEngine::GameEngine(char *filename)
 	loading.Draw();
 	window->display();
 	std::shared_ptr<Textures> GameAssets = Factory::CreatGameAssets();
-	//GameAssets->SetTexturesBuffer("bnn.png");
-	//GameAssets->SetTexturesBuffer("HealthPotion.png");
-	//GameAssets->SetTexturesBuffer("yeti.png");
-	//GameAssets->SetTexturesBuffer("Background.png");
-	//GameAssets->SetTexturesBuffer("swash.png");
-	//GameAssets->SetTexturesBuffer("bat.png");
 	s = Factory::CreateSound();
 	Musicfilestream("MusicList.txt");
 	Graphicsfilestream("GraphicsList.txt");
@@ -40,41 +34,11 @@ GameEngine::GameEngine(char *filename)
 
 void GameEngine::GameLoop()
 {
-	std::vector<AABB*> *mst;
-	//Factory::SetUpStatic::SetUpStaticObject(0, 1020, 3000, 1300, window/*, "C:\\Users\\Tomer\\Documents\\Visual Studio 2015\\Projects\\LastAttempt\\df.png"*/);
-	//Factory::CreatestaticObject();
-	//Factory::SetUpStatic::SetUpStaticObject(200, 200, 800, 400, window/*, "C:\\Users\\Tomer\\Documents\\Visual Studio 2015\\Projects\\LastAttempt\\df.png"*/);
-	//Factory::CreatestaticObject();
-	//Factory::SetUpStatic::SetUpStaticObject(200, 200, 400, 800, window/*, "C:\\Users\\Tomer\\Documents\\Visual Studio 2015\\Projects\\LastAttempt\\df.png"*/);
-	//Factory::CreatestaticObject();
-	//Factory::SetUpItm::SetUpItem(210, 149, 260, 200, window, "HealthPotion.png");
-	//Factory::CreateItem();
-
+	std::vector<std::shared_ptr<Object>> *mst;
 	mst = Factory::callobjectList();
-
 	window->setFramerateLimit(60);
 
-	/*for (short i = 0; i < 2 * testnum; i += 2)
-		for (short p = 0; p < 2 * testnum; p += 2)
-		{
-			Factory::SetUpMstr::SetUpMonster(600 + p * 80, i * 80, 600 + p * 80 + 80, i * 80 + 80, 100, 5, 5, window);
-			Factory::SetUpMstr::SetUpYeti(2, "yeti.png");
-			Factory::CreateMonster("Yeti");
-		}
-	for (short i = 0; i < 2 * 2 * testnum; i += 2)
-		for (short p = 0; p < 2 * 2 *testnum; p += 2)
-		{
-			int rhight = (rand() % 200) + 400;
-			Factory::SetUpMstr::SetUpMonster(800 + p * 32, i * 32, 800 + p * 32 + 32, i * 32 + 32, 35, 15, 5, window);
-			Factory::SetUpMstr::SetUpBat(rhight,2, "bat.png");
-			Factory::CreateMonster("Bat");
-		}
-
-	Factory::SetUpPlyr::SetUpPlayer(1770, 0, 1820, 50, 100, 10, 10, window, "bnn.png");
-	plyr = Factory::CreatePlayer();*/
-
 	LoadFromFile("Map.txt");
-
 	QuadTree QT(mst->at(0)->GetTL().GetX() - 1000, -10800, mst->at(mst->size() - 1)->GetTL().GetX() + 1000, 10800);
 	sf::Clock clki;
 
@@ -90,102 +54,60 @@ void GameEngine::GameLoop()
 			window->clear();
 			for (short i = 0; i < mst->size(); i++)
 			{
-				bool ti = mst->at(i)->ownerptr->isUpForDestruction();
+				bool ti = mst->at(i)->isUpForDestruction();
 				if (ti) {
-					if (mst->at(i)->ownerptr->reType() == ply)
+					if (mst->at(i)->reType() == ply)
 						GameOver = true;
 					Factory::destoryObject(i);
 				}
-				/*
-				switch (mst->at(i)->ownerptr->reType())
-				{
-				case ply:
-					dynamic_cast<Player*>(mst->at(i)->ownerptr)->~Player();
-					break;
-				case mnstr:
-					if(dynamic_cast<Monster*>(mst->at(i)->ownerptr)->reMType() == basemonster)
-						dynamic_cast<Monster*>(mst->at(i)->ownerptr)->~Monster();
-					else if(dynamic_cast<Monster*>(mst->at(i)->ownerptr)->reMType() == yeti)
-						dynamic_cast<Yeti*>(mst->at(i)->ownerptr)->~Yeti();
-					else if (dynamic_cast<Bat*>(mst->at(i)->ownerptr)->reMType() == bat)
-						dynamic_cast<Bat*>(mst->at(i)->ownerptr)->~Bat();
-					break;
-				case itm:
-					dynamic_cast<Item*>(mst->at(i)->ownerptr)->~Item();
-					break;
-				case sttc:
-					dynamic_cast<StaticObject*>(mst->at(i)->ownerptr)->~StaticObject();
-					break;
-				case skill:
-					dynamic_cast<Skill*>(mst->at(i)->ownerptr)->~Skill();
-					break;
-				}
-				mst->erase(mst->begin() + i);
-				mst->shrink_to_fit();
-			}*/
 			}
-
-			/*sf::Clock clkkk;
-			clkkk.restart().asSeconds();
-			for (std::vector<AABB*>::iterator itr = mst->begin(); itr != mst->end() ; ++itr)
-			{
-				switch ((*itr)->ownerptr->reType())
-				{
-				case mnstr:
-					dynamic_cast<Monster*>((*itr)->ownerptr)->Controls();
-					dynamic_cast<Monster*>((*itr)->ownerptr)->PhysicsInit();
-					break;
-				case itm:
-					dynamic_cast<Item*>((*itr)->ownerptr)->PhysicsInit();
-					break;
-				case sttc:
-					break;
-				case ply:
-					dynamic_cast<Player*>((*itr)->ownerptr)->Controls();
-					dynamic_cast<Player*>((*itr)->ownerptr)->PhysicsInit();
-					break;
-				case skill:
-					dynamic_cast<Skill*>((*itr)->ownerptr)->UpdateMO();
-					dynamic_cast<Skill*>((*itr)->ownerptr)->isTimeToDie();
-					break;
-				}
-			}
-			std::cout << clkkk.restart().asSeconds() << std::endl;
-			*/
 
 			sf::Clock clkkk;
 			clkkk.restart().asSeconds();
 			for (int i = 0; i < mst->size(); i++)
 			{
-				switch (mst->at(i)->ownerptr->reType())
+				switch (mst->at(i)->reType())
 				{
-				case mnstr:
-					dynamic_cast<Monster*>(mst->at(i)->ownerptr)->Controls();
-					dynamic_cast<Monster*>(mst->at(i)->ownerptr)->PhysicsInit();
-					break;
-				case itm:
-					dynamic_cast<Item*>(mst->at(i)->ownerptr)->PhysicsInit();
-					break;
-				case sttc:
-					break;
-				case ply:
-					dynamic_cast<Player*>(mst->at(i)->ownerptr)->Controls();
-					dynamic_cast<Player*>(mst->at(i)->ownerptr)->PhysicsInit();
-					break;
-				case skill:
-					dynamic_cast<Skill*>(mst->at(i)->ownerptr)->UpdateMO();
-					dynamic_cast<Skill*>(mst->at(i)->ownerptr)->isTimeToDie();
-					break;
+					case mnstr:
+					{
+						std::shared_ptr<Monster> ms = std::dynamic_pointer_cast<Monster>(mst->at(i));
+						ms->Controls();
+						ms->PhysicsInit();
+						break;
+					}
+					case itm:
+					{
+						std::shared_ptr<Item> it = std::dynamic_pointer_cast<Item>(mst->at(i));
+						it->PhysicsInit();
+						break;
+					}
+					case sttc:
+						break;
+					case ply:
+					{
+						std::shared_ptr<Player> pl = std::dynamic_pointer_cast<Player>(mst->at(i));
+						pl->Controls();
+						pl->PhysicsInit();
+						break;
+					}
+					case skill:
+					{
+						std::shared_ptr<Skill> sk = std::dynamic_pointer_cast<Skill>(mst->at(i));
+						sk->UpdateMO();
+						sk->isTimeToDie();
+						break;
+					}
 				}
 			}
-			std::cout << clkkk.restart().asSeconds() << std::endl;
+		 std::cout << clkkk.restart().asSeconds() << std::endl;
 
 
-			QT.CleanTree();
+		QT.CleanTree();
 
 			for (short i = 0; i < mst->size(); i++)
 			{
-				QT.insert(mst->at(i)->getAABB());
+				std::shared_ptr<AABB> ab = std::dynamic_pointer_cast<AABB>(mst->at(i));
+				QT.insert(ab.get());
 			}
 
 			QT.QueryNodes();
@@ -195,22 +117,22 @@ void GameEngine::GameLoop()
 		ls.Draw();
 		for (short i = 0; i < mst->size(); i++)
 		{
-			switch (mst->at(i)->ownerptr->reType())
+			switch (mst->at(i)->reType())
 			{
 			case mnstr:
-				dynamic_cast<Monster*>(mst->at(i)->ownerptr)->draw();
+				std::dynamic_pointer_cast<Monster>(mst->at(i))->draw();
 				break;
 			case itm:
-				dynamic_cast<Item*>(mst->at(i)->ownerptr)->draw();
+				std::dynamic_pointer_cast<Item>(mst->at(i))->draw();
 				break;
 			case sttc:
-				dynamic_cast<StaticObject*>(mst->at(i)->ownerptr)->draw();
+				std::dynamic_pointer_cast<StaticObject>(mst->at(i))->draw();
 				break;
 			case ply:
-				dynamic_cast<Player*>(mst->at(i)->ownerptr)->draw();
+				std::dynamic_pointer_cast<Player>(mst->at(i))->draw();
 				break;
 			case skill:
-				dynamic_cast<Skill*>(mst->at(i)->ownerptr)->draw();
+				std::dynamic_pointer_cast<Skill>(mst->at(i))->draw();
 				break;
 			}
 		}

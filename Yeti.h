@@ -9,7 +9,7 @@ private:
 public:
 	Yeti(double tspd ,AABB range, double hp, double ad, double spd, std::shared_ptr<sf::RenderWindow> window, std::shared_ptr<sf::Texture> txt);
 	void Controls();
-	void intersection(Object *obj);
+	bool intersection(AABB *obj);
 	short reMType();
 	void Attack();
 	~Yeti() {}

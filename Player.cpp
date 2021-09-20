@@ -7,7 +7,7 @@
 
 Player::Player(AABB range, double hp, double ad, double spd, std::shared_ptr<sf::RenderWindow> window, std::shared_ptr<sf::Texture> txt) : Living(hp, ad)
 {
-	space = range;
+	setAABB(range);
 	sf::Vector2f cor(range.GetTL().GetX(), range.GetTL().GetY());
 	if (txt == nullptr)
 	{
@@ -16,7 +16,7 @@ Player::Player(AABB range, double hp, double ad, double spd, std::shared_ptr<sf:
 	}
 	else
 	{
-		mdisp = std::make_shared<Graphics>(cor, txt, window, &space);
+		mdisp = std::make_shared<Graphics>(cor, txt, window, getAABB());
 		std::shared_ptr<Textures> t = Factory::CreatGameAssets();
 		mdisp->AddResource(std::make_shared<sf::Texture>(*t->getTexture("yeti.png")), "yeti", nullptr);
 	}
@@ -30,7 +30,6 @@ Player::Player(AABB range, double hp, double ad, double spd, std::shared_ptr<sf:
 	ph.setObjectsParameters(pps);
 	SetHealth(100);
 	refreshLastSpace();
-	space.SetOwner(this);
 	animantioncooldown.SetTimerMaxAsSeconds(0.05);
 	attspd.SetTimerMaxAsSeconds(0.5);
 	dashcooldown.SetTimerMaxAsSeconds(0.7);
@@ -38,15 +37,15 @@ Player::Player(AABB range, double hp, double ad, double spd, std::shared_ptr<sf:
 	invulnerable.SetTimerMaxAsSeconds(1);
 	minv.SetTimerMaxAsSeconds(0.35);
 	playerview.setSize(1980, 1080);
-	playerview.setCenter(space.GetCenter().GetX(), space.GetCenter().GetY());
+	playerview.setCenter(GetCenter().GetX(), GetCenter().GetY());
 	zm = 1;
 }
 
 
 void Player::Move(double xspd, double yspd)
 {
-	space.SetTL(double(space.GetTL().GetX() + xspd), double(space.GetTL().GetY() + yspd));
-	space.SetBR(double(space.GetBR().GetX() + xspd), double(space.GetBR().GetY() + yspd));
+	SetTL(double(GetTL().GetX() + xspd), double(GetTL().GetY() + yspd));
+	SetBR(double(GetBR().GetX() + xspd), double(GetBR().GetY() + yspd));
 	PViewAdjustLoop(xspd, yspd);
 }
 
@@ -59,7 +58,7 @@ void Player::amidead()
 void Player::draw()
 {
 	refreshLastSpace();
-	sf::Vector2f p(space.GetTL().GetX(), space.GetTL().GetY());
+	sf::Vector2f p(GetTL().GetX(), GetTL().GetY());
 	refreshgraphics(p);
 	if (animantioncooldown.IsTimeUp()) {
 		mdisp->switchToNextFrame();
@@ -188,14 +187,14 @@ void Player::Controls()
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::G))
 	{
 		if (attspd.IsTimeUp()) {
-			Point t = space.GetBR();
+			Point t = GetBR();
 			if (mdisp->GetCurrResourceName() == "yeti")
 			{
-				space.SetBR(t.GetX() - 30, t.GetY() - 30);
+				SetBR(t.GetX() - 30, t.GetY() - 30);
 				mdisp->ChangeResourceTo("original");
 			}
 			else if (mdisp->GetCurrResourceName() == "original") {
-				space.SetBR(t.GetX() + 30, t.GetY() + 30);
+				SetBR(t.GetX() + 30, t.GetY() + 30);
 				mdisp->ChangeResourceTo("yeti");
 			}
 			attspd.resetTimer();
@@ -210,7 +209,7 @@ void Player::Controls()
 				s = Factory::CreateSound();
 				attacksound.setBuffer(s->reSfx()->at(0).sbuf);
 				attacksound.play();
-				Factory::SetUpsk::SetUpSkill(&space, mdisp->rewin(), "swash.png", shared_from_this());
+				Factory::SetUpsk::SetUpSkill(getAABB(), mdisp->rewin(), "swash.png", shared_from_this());
 				Factory::CreateSkill();
 				attspd.resetTimer();
 			}
@@ -265,8 +264,9 @@ void Player::Controls()
 		}*/
 }
 
-void Player::intersection(Object *obj)
+bool Player::intersection(AABB *ab)
 {
+	Object* obj = static_cast<Object*>(ab);
 	switch (obj->reType())
 	{
 	case mnstr:
@@ -314,12 +314,12 @@ void Player::intersection(Object *obj)
 	case sttc:
 	{
 		
-		AABB *t = this->getSpace();
+		AABB *t = this->getAABB();
 		short dir = 0;
 		double overlap = 0;
 		StaticObject *sptr = dynamic_cast<StaticObject*>(obj);
-		dir = Lastspace.WIRTTO(*sptr->getSpace());
-		overlap = getSpace()->Overlap(*sptr->getSpace(), dir);
+		dir = Lastspace.WIRTTO(*sptr->getAABB());
+		overlap = getAABB()->Overlap(*sptr->getAABB(), dir);
 		PhysicsIntersection(dir, overlap);
 		if (dir == top) {
 			ps.collision_state = OnGround;
@@ -332,17 +332,18 @@ void Player::intersection(Object *obj)
 		break;
 	}
 	}
+	return true;
 }
 
 void Player::PViewAdjustLoop(double xspd, double yspd)
 {
-	if(space.GetCenter().GetX() > mdisp->rewin()->getView().getCenter().x + 300)
+	if(GetCenter().GetX() > mdisp->rewin()->getView().getCenter().x + 300)
 		playerview.move(xspd, 0);
-	else if (space.GetCenter().GetX() < mdisp->rewin()->getView().getCenter().x - 300)
+	else if (GetCenter().GetX() < mdisp->rewin()->getView().getCenter().x - 300)
 		playerview.move(xspd, 0);
-	if(space.GetCenter().GetY() > mdisp->rewin()->getView().getCenter().y + 200)
+	if(GetCenter().GetY() > mdisp->rewin()->getView().getCenter().y + 200)
 		playerview.move( 0, yspd);
-	else if (space.GetCenter().GetY() < mdisp->rewin()->getView().getCenter().y - 200)
+	else if (GetCenter().GetY() < mdisp->rewin()->getView().getCenter().y - 200)
 		playerview.move(0, yspd);
 	mdisp->rewin()->setView(playerview);
 }

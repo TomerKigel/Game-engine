@@ -21,11 +21,11 @@ void Bat::Controls()
 				Accelerate(0, 10);
 			}
 			f = rand() % 2;
-			if (ohight - space.GetCenter().GetY() <= 50 && ohight - space.GetCenter().GetY() >= -50)
+			if (ohight - GetCenter().GetY() <= 50 && ohight - GetCenter().GetY() >= -50)
 				g = rand() % 2;
-			else if (ohight - space.GetCenter().GetY() > 50)
+			else if (ohight - GetCenter().GetY() > 50)
 				g = 0;
-			else if (ohight - space.GetCenter().GetY() < -50)
+			else if (ohight - GetCenter().GetY() < -50)
 				g = 1;
 			if (f == 0)
 			{
@@ -57,22 +57,22 @@ void Bat::Controls()
 			if (attTimer.IsTimeUp())
 			{
 				attTimer.resetTimer();
-				if (focus->GetCenter().GetX() - space.GetCenter().GetX() < 100 && focus->GetCenter().GetX() - space.GetCenter().GetX() > -100)
+				if (focus->GetCenter().GetX() - GetCenter().GetX() < 100 && focus->GetCenter().GetX() - GetCenter().GetX() > -100)
 				{
-					if (focus->GetCenter().GetY() > space.GetCenter().GetY())
+					if (focus->GetCenter().GetY() > GetCenter().GetY())
 						Accelerate(0, 10);
 				}
 				
 			}
 				int g = 0, f = 0;
 				f = rand() % 20;
-				if (ohight - space.GetCenter().GetY() <= 50 && ohight - space.GetCenter().GetY() >= -50)
+				if (ohight - GetCenter().GetY() <= 50 && ohight - GetCenter().GetY() >= -50)
 					g = rand() % 2;
-				else if (ohight - space.GetCenter().GetY() > 50)
+				else if (ohight - GetCenter().GetY() > 50)
 					g = 0;
-				else if (ohight - space.GetCenter().GetY() < -50)
+				else if (ohight - GetCenter().GetY() < -50)
 					g = 1;
-				if (focus->GetCenter().GetX() < space.GetCenter().GetX())
+				if (focus->GetCenter().GetX() < GetCenter().GetX())
 				{
 					if (f < 15) {
 						if (mnstrstate.looking_state == lookingright) {
@@ -119,8 +119,9 @@ void Bat::Controls()
 	}
 }
 
-void Bat::intersection(Object *obj)
+bool Bat::intersection(AABB *ab)
 {
+	Object* obj = static_cast<Object*>(ab);
 	switch (obj->reType())
 	{
 	case skill:
@@ -131,15 +132,14 @@ void Bat::intersection(Object *obj)
 			std::shared_ptr<Player> tpl = std::dynamic_pointer_cast<Player>(p->returnowner());
 			PushBack(tpl->reState().looking_state);
 			tpl->IncStamina(20);
-			setFocus(tpl->getSpace());
+			setFocus(tpl->getAABB());
 			DecHealth(30);
 			//mdisp->changeColor(true);
 			invulnerable.resetTimer();
 			if (!isLiving()) {
 				destroy();
-				//short g = rand() % 6;
 				if (tpl->ps.moving_state == dashing_left || tpl->ps.moving_state == dashing_right) {
-					AABB s(space.GetBR().GetX() - 50, space.GetBR().GetY() - 50, space.GetBR().GetX(), space.GetBR().GetY());
+					AABB s(GetBR().GetX() - 50, GetBR().GetY() - 50, GetBR().GetX(), GetBR().GetY());
 					Factory::SetUpItm::SetUpItem(&s, mdisp->rewin(), "HealthPotion.png");
 					Factory::CreateItem();
 				}
@@ -148,19 +148,20 @@ void Bat::intersection(Object *obj)
 		break;
 	}
 	case ply:
-		//setFocus(dynamic_cast<Player*>(obj)->getSpace());
+		//setFocus(dynamic_cast<Player*>(obj)->getAABB());
 		//MakeAggresive();
 		break;
 	case sttc:
 		short dir = 0;
 		double overlap = 0;
 		StaticObject *sptr = dynamic_cast<StaticObject*>(obj);
-		dir = Lastspace.WIRTTO(*sptr->getSpace());
-		overlap = getSpace()->Overlap(*sptr->getSpace(), dir);
+		dir = Lastspace.WIRTTO(*sptr->getAABB());
+		overlap = getAABB()->Overlap(*sptr->getAABB(), dir);
 		PhysicsIntersection(dir, overlap);
 		calcDisFromEdge(sptr);
 		break;
 	}
+	return true;
 }
 
 short Bat::reMType()

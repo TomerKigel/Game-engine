@@ -1,12 +1,8 @@
 #pragma once
-
 #include "Point.h"
-#include "Object.h"
 #include <memory>
 
-class Object;
-
-class AABB : public std::enable_shared_from_this<AABB>
+class AABB
 {
 private:
 	// T = top 
@@ -17,7 +13,6 @@ private:
 	Point BR;
 
 public:
-	Object *ownerptr;
 
 	//Default constructor
 	AABB() {}
@@ -30,7 +25,7 @@ public:
 	//\param brx   Bottom Right X cooridante												    
 	//\param brx   Bottom Right Y cooridante													
 	////////////////////////////////////////////////////////////////////////////////////////
-	AABB(double tlx, double tly, double brx, double bry, Object *owner = nullptr);
+	AABB(double tlx, double tly, double brx, double bry);
 	
 
 	////////////////////////////////////////////////////////////////////////////////////////
@@ -42,7 +37,7 @@ public:
 	//\param tl   Top Left Point													
 	//\param br   Bottom Right Point																										
 	////////////////////////////////////////////////////////////////////////////////////////
-	AABB(Point tl, Point br, Object *owner = nullptr);
+	AABB(Point tl, Point br);
 
 	//accessor - return the value center of the AABB
 	Point GetCenter();
@@ -99,6 +94,13 @@ public:
 
 
 	////////////////////////////////////////////////////////////////////////////////////////
+	//Copy Function														
+	//\brief  Sets AABB's values to the values of param origin				
+	//\param origin   AABB to copy from												
+	///////////////////////////////////////////////////////////////////////////////////////
+	void setAABB(AABB &origin);
+
+	////////////////////////////////////////////////////////////////////////////////////////
 	//Mutator Function														
 	//\brief  Sets TL values				
 	//\param x   x coordinate of TL		
@@ -119,7 +121,7 @@ public:
 	//\brief  Changes ownership of the AABB					
 	//\param ptr   new owner reference   											
 	///////////////////////////////////////////////////////////////////////////////////////
-	void SetOwner(Object *ptr);
+	//void SetOwner(Object *ptr);
 
 
 	////////////////////////////////////////////////////////////////////////////////////////
@@ -136,6 +138,9 @@ public:
 	//\param direction   where is t parameter in relation current object(derived from WIRTTO)	
 	///////////////////////////////////////////////////////////////////////////////////////
 	double Overlap(AABB t, short direction);
+
+
+	virtual bool intersection(AABB *range);
 
 	//Default Destructor
 	~AABB() {}

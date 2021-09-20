@@ -99,7 +99,6 @@ typedef struct
 class Factory 
 {
 private:
-	static std::vector<AABB*> list;
 	static std::vector<std::shared_ptr<Object>> ptrlist;
 	static MonsterParameters mparam;
 	static YetiParameters yetiparam;
@@ -109,7 +108,7 @@ private:
 	static SkillParameters skparam;
 	static BatParameters btparam;
 public:
-	static std::vector<AABB*> *callobjectList();
+	static std::vector<std::shared_ptr<Object>> *callobjectList();
 	static void destorylist();
 	static void destoryObject(int i);
 	////////////////////////////////////////////////////////////////////////////////////////

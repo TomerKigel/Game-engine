@@ -2,7 +2,7 @@
 
 StaticObject::StaticObject(AABB range, std::shared_ptr<sf::RenderWindow> window, std::shared_ptr<sf::Texture> txt)
 {
-	space = range;
+	setAABB(range);
 	sf::Vector2f cor(range.GetTL().GetX(), range.GetTL().GetY());
 	if (txt == nullptr)
 	{
@@ -11,9 +11,8 @@ StaticObject::StaticObject(AABB range, std::shared_ptr<sf::RenderWindow> window,
 	}
 	else
 	{
-		disp = std::make_shared <Graphics>(cor, txt, window,&space);
+		disp = std::make_shared <Graphics>(cor, txt, window, getAABB());
 	}
-	space.SetOwner(this);
 }
 
 void StaticObject::draw()
@@ -21,13 +20,10 @@ void StaticObject::draw()
 	disp->Draw();
 }
 
-AABB *StaticObject::getSpace()
-{
-	return &space;
-}
 
-void StaticObject::intersection(Object *obj)
+bool StaticObject::intersection(AABB *ab)
 {
+	Object* obj = static_cast<Object*>(ab);
 	switch (obj->reType())
 	{
 	case ply:
@@ -35,4 +31,5 @@ void StaticObject::intersection(Object *obj)
 	case mnstr:
 		break;
 	}
+	return true;
 }

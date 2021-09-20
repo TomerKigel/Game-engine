@@ -1,31 +1,5 @@
 #include "Movable.h"
 #include <memory>
-//
-//Moveable::Moveable(AABB range)
-//{
-//	space = range;
-//}
-//
-//Moveable::Moveable(Point tl, Point br)
-//{
-//	space = AABB(tl,br);
-//}
-//
-//Moveable::Moveable(double tlx, double tly, double brx, double bry)
-//{
-//	space = AABB(tlx,tly,brx,bry);
-//}
-//
-//void Moveable::Move(double xspd, double yspd)
-//{
-//	space.SetTL(space.GetTL().GetX()+xspd, space.GetTL().GetY() + yspd);
-//	space.SetBR(space.GetBR().GetX() + xspd, space.GetBR().GetY() + yspd);
-//}
-
-AABB *Movable::getSpace()
-{
-	return &space;
-}
 
 AABB *Movable::getLastSpace()
 {
@@ -35,12 +9,12 @@ AABB *Movable::getLastSpace()
 
 void Movable::SpaceBack()
 {
-	space = Lastspace;
+	setAABB(Lastspace);
 }
 
 void Movable::refreshLastSpace()
 {
-	Lastspace = space;
+	Lastspace = *getAABB();
 }
 
 short Movable::reType()

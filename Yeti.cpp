@@ -50,7 +50,7 @@ void Yeti::Controls()
 		else
 		{
 			g = rand() % 19;
-			if (focus->GetCenter().GetX() < space.GetCenter().GetX())
+			if (focus->GetCenter().GetX() < GetCenter().GetX())
 			{
 				if (g < 17) {
 					if (mnstrstate.looking_state == lookingright) {
@@ -84,12 +84,12 @@ void Yeti::Controls()
 					Accelerate(-3, 0);
 				}
 			}
-			if (focus->GetCenter().GetY() < space.GetCenter().GetY() && jcd.IsTimeUp())
+			if (focus->GetCenter().GetY() < GetCenter().GetY() && jcd.IsTimeUp())
 			{
 				jcd.resetTimer();
 				Accelerate(0, -10);
 			}
-			if (focus->GetCenter().GetX() - space.GetCenter().GetX() < 30 && focus->GetCenter().GetX() - space.GetCenter().GetX() > -30)
+			if (focus->GetCenter().GetX() - GetCenter().GetX() < 30 && focus->GetCenter().GetX() - GetCenter().GetX() > -30)
 			{
 				Attack();
 			}
@@ -98,8 +98,9 @@ void Yeti::Controls()
 	}
 }
 
-void Yeti::intersection(Object *obj)
+bool Yeti::intersection(AABB *ab)
 {
+	Object* obj = static_cast<Object*>(ab);
 	switch (obj->reType())
 	{
 	case skill:
@@ -110,7 +111,7 @@ void Yeti::intersection(Object *obj)
 			std::shared_ptr<Player> tpl = std::dynamic_pointer_cast<Player>(p->returnowner());
 			PushBack(tpl->reState().looking_state);
 			tpl->IncStamina(20);
-			setFocus(tpl->getSpace());
+			setFocus(tpl->getAABB());
 			DecHealth(30);
 			//mdisp->changeColor(true);
 			invulnerable.resetTimer();
@@ -118,7 +119,7 @@ void Yeti::intersection(Object *obj)
 				destroy();
 				//short g = rand() % 6;
 				if (tpl->ps.moving_state == dashing_left || tpl->ps.moving_state == dashing_right) {
-					AABB s(space.GetBR().GetX() - 50, space.GetBR().GetY() - 50, space.GetBR().GetX(), space.GetBR().GetY());
+					AABB s(GetBR().GetX() - 50, GetBR().GetY() - 50, GetBR().GetX(), GetBR().GetY());
 					Factory::SetUpItm::SetUpItem(&s, mdisp->rewin(), "HealthPotion.png");
 					Factory::CreateItem();
 				}
@@ -134,12 +135,13 @@ void Yeti::intersection(Object *obj)
 		short dir = 0;
 		double overlap = 0;
 		StaticObject *sptr = dynamic_cast<StaticObject*>(obj);
-		dir = Lastspace.WIRTTO(*sptr->getSpace());
-		overlap = getSpace()->Overlap(*sptr->getSpace(), dir);
+		dir = Lastspace.WIRTTO(*sptr->getAABB());
+		overlap = getAABB()->Overlap(*sptr->getAABB(), dir);
 		PhysicsIntersection(dir, overlap);
 		calcDisFromEdge(sptr);
 		break;
 	}
+	return true;
 }
 
 short Yeti::reMType()
@@ -150,7 +152,7 @@ short Yeti::reMType()
 void Yeti::Attack()
 {
 	if (attTimer.IsTimeUp()) {
-		Factory::SetUpsk::SetUpSkill(&space, mdisp->rewin(), "swash.png",shared_from_this());
+		Factory::SetUpsk::SetUpSkill(getAABB(), mdisp->rewin(), "swash.png",shared_from_this());
 		Factory::CreateSkill();
 		attTimer.resetTimer();
 	}

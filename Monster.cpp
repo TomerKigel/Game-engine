@@ -6,7 +6,7 @@
 
 Monster::Monster(AABB range, double hp, double ad,double spd, std::shared_ptr<sf::RenderWindow> window , std::shared_ptr<sf::Texture> txt) : Living(hp, ad)
 {
-	space = range;
+	setAABB(range);
 	sf::Vector2f cor(range.GetTL().GetX(), range.GetTL().GetY());
 	if (txt == nullptr) 
 	{
@@ -15,7 +15,7 @@ Monster::Monster(AABB range, double hp, double ad,double spd, std::shared_ptr<sf
 	}
 	else
 	{
-		mdisp = std::make_shared<Graphics>(cor, txt, window , &space);
+		mdisp = std::make_shared<Graphics>(cor, txt, window , getAABB());
 	}
 	PhysicsStats pps;
 	pps.topspeed = 5;
@@ -32,14 +32,13 @@ Monster::Monster(AABB range, double hp, double ad,double spd, std::shared_ptr<sf
 	invulnerable.SetTimerMaxAsSeconds(0.5);
 	animantioncooldown.SetTimerMaxAsSeconds(0.1);
 	mnstrstate.looking_state = lookingright;
-	space.SetOwner(this);
 }
 
 
 void Monster::Move(double xspd, double yspd)
 {
-	space.SetTL(space.GetTL().GetX() + xspd, space.GetTL().GetY() + yspd);
-	space.SetBR(space.GetBR().GetX() + xspd, space.GetBR().GetY() + yspd);
+	SetTL(GetTL().GetX() + xspd, GetTL().GetY() + yspd);
+	SetBR(GetBR().GetX() + xspd, GetBR().GetY() + yspd);
 }
 
 void Monster::draw()
@@ -49,7 +48,7 @@ void Monster::draw()
 		mdisp->switchToNextFrame();
 		animantioncooldown.resetTimer();
 	}
-	sf::Vector2f p(space.GetTL().GetX(), space.GetTL().GetY());
+	sf::Vector2f p(GetTL().GetX(), GetTL().GetY());
 	refreshgraphics(p);
 	double tnfc = (HealthPoints / maxHealthPoints) * 255;
 	mdisp->changeColor(tnfc, tnfc, 0 , 0);
@@ -118,7 +117,7 @@ void Monster::Controls()
 		else
 		{
 			g = rand() % 19;
-			if (focus->GetCenter().GetX() < space.GetCenter().GetX())
+			if (focus->GetCenter().GetX() < GetCenter().GetX())
 			{
 				if (g < 17) {
 					if (mnstrstate.looking_state == lookingright) {
@@ -152,7 +151,7 @@ void Monster::Controls()
 					Accelerate(-3, 0);
 					}
 			}
-			if (focus->GetCenter().GetY() < space.GetCenter().GetY() && jcd.IsTimeUp())
+			if (focus->GetCenter().GetY() < GetCenter().GetY() && jcd.IsTimeUp())
 			{
 				jcd.resetTimer();
 				Accelerate(0, -10);
@@ -164,8 +163,8 @@ void Monster::Controls()
 
 void Monster::calcDisFromEdge(StaticObject *obj)
 {
-	double ti = space.GetCenter().GetX() - obj->getSpace()->GetTL().GetX();
-	double pi = obj->getSpace()->GetBR().GetX() - space.GetCenter().GetX();
+	double ti = GetCenter().GetX() - obj->getAABB()->GetTL().GetX();
+	double pi = obj->getAABB()->GetBR().GetX() - GetCenter().GetX();
 	disfedge.SetX(ti);
 	disfedge.SetY(pi);
 }
@@ -188,8 +187,9 @@ void Monster::cc()
 	mdisp->changeColor(true);
 }
 
-void Monster::intersection(Object *obj)
+bool Monster::intersection(AABB *ab)
 {
+	Object* obj = static_cast<Object*>(ab);
 	switch (obj->reType())
 	{
 	case skill:
@@ -200,7 +200,7 @@ void Monster::intersection(Object *obj)
 			std::shared_ptr<Player> tpl = std::dynamic_pointer_cast<Player>(p->returnowner());
 			PushBack(tpl->reState().looking_state);
 			tpl->IncStamina(20);
-			setFocus(tpl->getSpace());
+			setFocus(tpl->getAABB());
 			DecHealth(30);
 			//mdisp->changeColor(true);
 			invulnerable.resetTimer();
@@ -208,7 +208,7 @@ void Monster::intersection(Object *obj)
 				destroy();
 				//short g = rand() % 6;
 				if (tpl->ps.moving_state == dashing_left || tpl->ps.moving_state == dashing_right) {
-					AABB s(space.GetBR().GetX() - 50, space.GetBR().GetY() - 50, space.GetBR().GetX(), space.GetBR().GetY());
+					AABB s(GetBR().GetX() - 50, GetBR().GetY() - 50, GetBR().GetX(), GetBR().GetY());
 					Factory::SetUpItm::SetUpItem(&s, mdisp->rewin(), "HealthPotion.png");
 					Factory::CreateItem();
 				}
@@ -224,10 +224,11 @@ void Monster::intersection(Object *obj)
 		short dir = 0;
 		double overlap = 0;
 		StaticObject *sptr = dynamic_cast<StaticObject*>(obj);
-		dir = Lastspace.WIRTTO(*sptr->getSpace());
-		overlap = getSpace()->Overlap(*sptr->getSpace(), dir);
+		dir = Lastspace.WIRTTO(*sptr->getAABB());
+		overlap = getAABB()->Overlap(*sptr->getAABB(), dir);
 		PhysicsIntersection(dir, overlap);
 		calcDisFromEdge(sptr);
 		break;
 	}
+	return true;
 }

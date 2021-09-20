@@ -9,29 +9,25 @@ StaticParameters Factory::sparam;
 ItemParameters Factory::iparam;
 SkillParameters Factory::skparam;
 
-std::vector<AABB*> Factory::list;
 std::vector<std::shared_ptr<Object>> Factory::ptrlist;
 static std::shared_ptr<Sound> tpl = nullptr;
 //static std::shared_ptr<Textures> tpga = nullptr;
 static std::shared_ptr<Player> isalive = nullptr;
 static std::shared_ptr<Textures> GameAssets = nullptr;
 
-std::vector<AABB*> *Factory::callobjectList()
+std::vector<std::shared_ptr<Object>> *Factory::callobjectList()
 {
-	return &list;
+	return &ptrlist;
 }
 
 void Factory::destorylist()
 {
-	list.clear();
 	ptrlist.clear();
 }
 
 void Factory::destoryObject(int i)
 {
-	list.erase(list.begin() + i);
 	ptrlist.erase(ptrlist.begin() + i);
-	list.shrink_to_fit();
 	ptrlist.shrink_to_fit();
 }
 
@@ -39,19 +35,16 @@ std::shared_ptr<Monster> Factory::CreateMonster(std::string mname)
 {
 	if (mname == "Monster") {
 		std::shared_ptr<Monster> tm = std::make_shared<Monster>(mparam.range, mparam.hp, mparam.ad, mparam.speed, mparam.window,nullptr);
-		list.push_back(tm->getSpace());
 		ptrlist.push_back(tm);
 		return tm;
 	}
 	else if (mname == "Yeti") {
 		std::shared_ptr<Yeti> tm = std::make_shared<Yeti>(yetiparam.speed,mparam.range, mparam.hp, mparam.ad, mparam.speed, mparam.window, yetiparam.texture);
-		list.push_back(tm->getSpace());
 		ptrlist.push_back(tm);
 		return tm;
 	}
 	else if (mname == "Bat") {
 		std::shared_ptr<Bat> tm = std::make_shared<Bat>(btparam.optimalhight,btparam.speed, mparam.range, mparam.hp, mparam.ad, mparam.speed, mparam.window, btparam.texture);
-		list.push_back(tm->getSpace());
 		ptrlist.push_back(tm);
 		return tm;
 	}
@@ -68,7 +61,6 @@ std::shared_ptr<Player> Factory::CreatePlayer()
 		return isalive;
 
 	if (tpl != nullptr) {
-		list.push_back(tpl->getSpace());
 		ptrlist.push_back(tpl);
 	}
 
@@ -78,7 +70,6 @@ std::shared_ptr<Player> Factory::CreatePlayer()
 std::shared_ptr<StaticObject> Factory::CreatestaticObject()
 {
 	std::shared_ptr<StaticObject> ts = std::make_shared<StaticObject>(sparam.range, sparam.window, sparam.texture);
-	list.push_back(ts->getSpace());
 	ptrlist.push_back(ts);
 	return ts;
 }
@@ -86,8 +77,6 @@ std::shared_ptr<StaticObject> Factory::CreatestaticObject()
 std::shared_ptr<Item> Factory::CreateItem()
 {
 	std::shared_ptr<Item> tit = std::make_shared<Item>(iparam.range, iparam.window, iparam.texture);
-	
-	list.push_back(tit->getSpace());
 	ptrlist.push_back(tit);
 	return tit;
 }
@@ -95,8 +84,6 @@ std::shared_ptr<Item> Factory::CreateItem()
 std::shared_ptr<Skill> Factory::CreateSkill()
 {
 	std::shared_ptr<Skill> s = std::make_shared<Skill>(skparam.range,0, skparam.window, skparam.texture,skparam.ownr);
-	
-	list.push_back(s->getSpace());
 	ptrlist.push_back(s);
 	return s;
 }
