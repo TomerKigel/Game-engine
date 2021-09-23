@@ -1,25 +1,28 @@
 #pragma once
-#include "Living.h"
-#include "Object.h"
-#include "Graphics.h"
+
 #include "Movable.h"
+#include "Graphics.h"
+#include "Living.h"
 #include "Mat.h"
-#include "StaticObject.h"
-#include "MState.h"
-#include "MTypes.h"
+#include <memory>
+#include "Sound.h"
+#include "PState.h"
+#include <math.h> 
 
 
-enum mt{basemonster,yeti,bat};
-
-class Monster : public Living, public Movable, public std::enable_shared_from_this<Monster>
+class Player : public Living, public Movable, public std::enable_shared_from_this<Player>
 {
-protected:
-	AABB *focus;
-	Point disfedge;
-	Cooldown cd, invulnerable, jcd, animantioncooldown;
-	std::shared_ptr<Graphics> mdisp;
 private:
-	Monster();
+	std::shared_ptr<Graphics> mdisp;
+	Cooldown animantioncooldown, invulnerable,attspd,dashcooldown, jumpcooldown;
+	Cooldown djump,minv;
+	sf::View playerview;
+	sf::Sound attacksound,jumpsound;
+
+	inputstatus inp;
+	int zm;
+
+	Player();
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	//Movement managment			
@@ -29,15 +32,12 @@ private:
 	//\param spdx   movement value - pixels in the x axis
 	//\param spdy   movement value - pixels in the y axis
 	////////////////////////////////////////////////////////////////////////////////////////
-	void Move(double spdx, double spdy);
-
+	void Move(double xspd, double yspd);
 public:
-	//friend class
-	friend AABB;
+	states ps;
 
-	mstates mnstrstate;
 	////////////////////////////////////////////////////////////////////////////////////////
-	//Constructor			
+	//Default constructor			
 	//
 	//\brief   sets the objects different parameters
 	//
@@ -46,8 +46,15 @@ public:
 	//\param ad      Attack Damage
 	//\param window  window handle pointer
 	////////////////////////////////////////////////////////////////////////////////////////
-	Monster(AABB range, double hp, double ad, double spd, std::shared_ptr<sf::RenderWindow> window, std::shared_ptr<sf::Texture> txt);
+	Player(AABB range, double hp, double ad,double spd, std::shared_ptr<sf::RenderWindow> window, std::shared_ptr<sf::Texture> txt);
 
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	//Tester			
+	//
+	//\brief   Tests if Health below 0 and destories object if it is													
+	////////////////////////////////////////////////////////////////////////////////////////
+	void amidead();
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	//Graphical draw			
@@ -70,41 +77,41 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////
 	void refreshgraphics(sf::Vector2f pos);
 
+	////////////////////////////////////////////////////////////////////////////////////////
+	//User input loop		
+	//
+	//\brief   gets keyboard hits and reacts acordingly									
+	////////////////////////////////////////////////////////////////////////////////////////
+	void Controls();
+	
 
-	 ////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////
 	//collision resolution		
 	//
 	//\brief   resolves intersection with different object types								
 	////////////////////////////////////////////////////////////////////////////////////////
 	bool intersection(AABB *obj);
 
-	////////////////////////////////////////////////////////////////////////////////////////
-	//Waypoint setter
-	//
-	//\brief   sets a way point for the object							
-	////////////////////////////////////////////////////////////////////////////////////////
-	void setFocus(AABB* cofob);
 
-	////////////////////////////////////////////////////////////////////////////////////////
-	//Action center	
-	//
-	//\brief   gets commands depending on state and focus and reacts acordingly									
-	////////////////////////////////////////////////////////////////////////////////////////
-	virtual void Controls();
+	void PViewAdjustLoop(double xspd, double yspd);
+
+	void HealthToSpd();
+
+	void GotHit();
+
+	void Player::PushBack(short direction);
+
+	states reState();
 
 	void action();
 
-	void calcDisFromEdge(StaticObject *obj);
-
-	void PushBack(short direction);
-	
-	virtual short reMType();
-
-	void cc();
 	////////////////////////////////////////////////////////////////////////////////////////
 	//Default destructor		
 	//
 	//\brief  destroys the object							
 	////////////////////////////////////////////////////////////////////////////////////////
-	~Monster();
+	~Player();
+
+
+
 };

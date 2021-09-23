@@ -76,6 +76,11 @@ bool Item::intersection(AABB *ab)
 	return true;
 }
 
+void Item::action()
+{
+	PhysicsInit();
+}
+
 void Item::Move(double xspd, double yspd)
 {
 	SetTL(double(GetTL().GetX() + xspd), double(GetTL().GetY() + yspd));

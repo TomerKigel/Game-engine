@@ -94,6 +94,12 @@ void Skill::refreshgraphics(sf::Vector2f pos)
 	mdisp->refreshPosition(pos);
 }
 
+void Skill::action()
+{
+	UpdateMO();
+	isTimeToDie();
+}
+
 void Skill::UpdatePRTO()
 {
 	short direction = 0;

@@ -161,6 +161,12 @@ void Monster::Controls()
 	}
 }
 
+void Monster::action()
+{
+	Controls();
+	PhysicsInit();
+}
+
 void Monster::calcDisFromEdge(StaticObject *obj)
 {
 	double ti = GetCenter().GetX() - obj->getAABB()->GetTL().GetX();

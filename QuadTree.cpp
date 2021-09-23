@@ -22,12 +22,13 @@ QuadTree::QuadTree(AABB range, QuadTree* r, short d, QuadTree *p)
 	}
 
 	//Scope settings
-	Range = range;
-	LooseRange = Range;
+	Range.setAABB(range);
+	LooseRange.setAABB(Range);
 	LooseRange*= 2;
 }
 
-QuadTree::QuadTree(Point tl, Point br, QuadTree* r, short d, QuadTree *p )
+
+QuadTree::QuadTree(Point tl, Point br, QuadTree* r, short d, QuadTree *p)
 {
 	//Root and parent Settings
 	if (r == nullptr)
@@ -47,7 +48,7 @@ QuadTree::QuadTree(Point tl, Point br, QuadTree* r, short d, QuadTree *p )
 	}
 
 	//Scope settings
-	Range = AABB(tl,br);
+	Range = AABB(tl, br);
 	LooseRange = Range;
 	LooseRange *= 2;
 }
@@ -77,24 +78,11 @@ QuadTree::QuadTree(double Tlx, double Tly, double Brx, double Bry, QuadTree* r, 
 	LooseRange *= 2;
 }
 
+
 bool QuadTree::insert(AABB *item)
 {
 	if (Range.isContaining(item->GetCenter()))
-	{
-		/*if (cantfit) {
-			if (item.GetLen() <= LooseRange.GetLen() &&
-				item.GetWid() <= LooseRange.GetWid())
-			{
-				itemlist.push_back(&item);
-				return true;
-			}
-			else
-			{
-				return parent->insert(item, true);
-			}
-			
-		}*/
-		
+	{	
 		if (item->GetLen() <= LooseRange.GetLen() &&
 			item->GetWid() <= LooseRange.GetWid())
 		{
@@ -207,7 +195,7 @@ void QuadTree::QueryNodes()
 		node[2]->QueryNodes();
 		node[3]->QueryNodes();
 	}
-	else if (itemlist.size() > 0)
+	else if(itemlist.size() > 0)
 	{
 		std::vector<AABB*> testset;
 		root->QueryRange(LooseRange, testset);

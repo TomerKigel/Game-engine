@@ -63,6 +63,7 @@ class Skill : public Movable , public std::enable_shared_from_this<Skill>
 		////////////////////////////////////////////////////////////////////////////////////////
 		void refreshgraphics(sf::Vector2f pos);
 
+		void action();
 
 		void UpdateMO();
 

@@ -28,118 +28,103 @@ GameEngine::GameEngine(char *filename)
 		throw("GameOver error");
 	menu = std::make_shared<Graphics>(sf::Vector2f(0, 0), me, window);
 	gomenu = std::make_shared<Graphics>(sf::Vector2f(0, 0), gome, window);
-	plyr = nullptr;
+	
 	isPaused = false;
+	ElapsedTime = 0;
 }
 
 void GameEngine::GameLoop()
 {
+	frameClock.restart();
 	std::vector<std::shared_ptr<Object>> *mst;
 	mst = Factory::callobjectList();
-	window->setFramerateLimit(60);
+	//window->setFramerateLimit(60);
 
 	LoadFromFile("Map.txt");
 	QuadTree QT(mst->at(0)->GetTL().GetX() - 1000, -10800, mst->at(mst->size() - 1)->GetTL().GetX() + 1000, 10800);
-	sf::Clock clki;
 
 	Physics::GravityOn();
 
 	sf::Vector2f a(0, 0);
-	Graphics ls(a, "Background.png", window,nullptr);
-
+	Graphics ls(a, "Background.png", window, nullptr);
+	
 	while (window->isOpen())
 	{
-		window->clear();
-		if (isPaused == false && GameOver == false) {
-			window->clear();
-			for (short i = 0; i < mst->size(); i++)
-			{
-				bool ti = mst->at(i)->isUpForDestruction();
-				if (ti) {
-					if (mst->at(i)->reType() == ply)
-						GameOver = true;
-					Factory::destoryObject(i);
-				}
-			}
-
-			sf::Clock clkkk;
-			clkkk.restart().asSeconds();
-			for (int i = 0; i < mst->size(); i++)
-			{
-				switch (mst->at(i)->reType())
-				{
-					case mnstr:
-					{
-						std::shared_ptr<Monster> ms = std::dynamic_pointer_cast<Monster>(mst->at(i));
-						ms->Controls();
-						ms->PhysicsInit();
-						break;
-					}
-					case itm:
-					{
-						std::shared_ptr<Item> it = std::dynamic_pointer_cast<Item>(mst->at(i));
-						it->PhysicsInit();
-						break;
-					}
-					case sttc:
-						break;
-					case ply:
-					{
-						std::shared_ptr<Player> pl = std::dynamic_pointer_cast<Player>(mst->at(i));
-						pl->Controls();
-						pl->PhysicsInit();
-						break;
-					}
-					case skill:
-					{
-						std::shared_ptr<Skill> sk = std::dynamic_pointer_cast<Skill>(mst->at(i));
-						sk->UpdateMO();
-						sk->isTimeToDie();
-						break;
-					}
-				}
-			}
-		 std::cout << clkkk.restart().asSeconds() << std::endl;
-
-
-		QT.CleanTree();
-
-			for (short i = 0; i < mst->size(); i++)
-			{
-				std::shared_ptr<AABB> ab = std::dynamic_pointer_cast<AABB>(mst->at(i));
-				QT.insert(ab.get());
-			}
-
-			QT.QueryNodes();
-			//QT.tdraw(window);
-		}
-		ls.setView(window->getView());
-		ls.Draw();
-		for (short i = 0; i < mst->size(); i++)
-		{
-			switch (mst->at(i)->reType())
-			{
-			case mnstr:
-				std::dynamic_pointer_cast<Monster>(mst->at(i))->draw();
-				break;
-			case itm:
-				std::dynamic_pointer_cast<Item>(mst->at(i))->draw();
-				break;
-			case sttc:
-				std::dynamic_pointer_cast<StaticObject>(mst->at(i))->draw();
-				break;
-			case ply:
-				std::dynamic_pointer_cast<Player>(mst->at(i))->draw();
-				break;
-			case skill:
-				std::dynamic_pointer_cast<Skill>(mst->at(i))->draw();
-				break;
-			}
-		}
-		EventLoop();
-		window->display();
+		run(&QT, mst, &ls);
 	}
 	mst->clear();
+}
+
+void GameEngine::run(QuadTree * QT, std::vector<std::shared_ptr<Object>> *mst, Graphics *ls)
+{
+	window->clear();
+	if (isPaused == false && GameOver == false) {
+		Running(QT, mst);
+	}
+	Operate(mst,QT,ls);
+}
+
+void GameEngine::Running(QuadTree * QT, std::vector<std::shared_ptr<Object>>* mst)
+{
+	EndOrDestory(mst);
+	ElapsedTime = frameClock.getElapsedTime().asMilliseconds();
+	if (ElapsedTime > 15) {
+		ActivateObjects(mst);
+		frameClock.restart();
+	}
+	
+	QT->CleanTree();
+	InsertObjectsToQuadTree(QT, mst);
+	QT->QueryNodes();
+	QT->tdraw(*window);
+}
+
+void GameEngine::EndOrDestory(std::vector<std::shared_ptr<Object>>* mst)
+{
+	for (short i = 0; i < mst->size(); i++)
+	{
+		bool ti = mst->at(i)->isUpForDestruction();
+		if (ti) {
+			if (mst->at(i)->reType() == ply)
+				GameOver = true;
+			Factory::destoryObject(i);
+		}
+	}
+}
+
+void GameEngine::Operate(std::vector<std::shared_ptr<Object>>* mst, QuadTree * QT, Graphics *ls)
+{
+		window->clear();
+		DrawAllObjects(mst,ls);
+		EventLoop();
+		window->display();
+}
+
+void GameEngine::ActivateObjects(std::vector<std::shared_ptr<Object>>* mst)
+{
+	for (int i = 0; i < mst->size(); i++)
+	{
+		mst->at(i)->action();
+	}
+}
+
+void GameEngine::InsertObjectsToQuadTree(QuadTree * QT, std::vector<std::shared_ptr<Object>>* mst)
+{
+	for (short i = 0; i < mst->size(); i++)
+	{
+		std::shared_ptr<AABB> ab = std::dynamic_pointer_cast<AABB>(mst->at(i));
+		QT->insert(ab.get());
+	}
+}
+
+void GameEngine::DrawAllObjects(std::vector<std::shared_ptr<Object>>* mst, Graphics *ls)
+{
+	ls->setView(window->getView());
+	ls->Draw();
+	for (short i = 0; i < mst->size(); i++)
+	{
+		mst->at(i)->draw();
+	}
 }
 
 void GameEngine::Musicfilestream(std::string filename)

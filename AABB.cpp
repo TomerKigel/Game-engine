@@ -86,14 +86,18 @@ bool AABB::isContaining(Point pnt)
 
 void AABB::operator=(AABB &origin)
 {
-	TL = origin.TL;
-	BR = origin.BR;
+	TL.SetX(origin.TL.GetX());
+	TL.SetY(origin.TL.GetY());
+	BR.SetX(origin.BR.GetX());
+	BR.SetY(origin.BR.GetY());
 }
 
 void AABB::setAABB(AABB &origin)
 {
-	TL = origin.TL;
-	BR = origin.BR;
+	TL.SetX(origin.TL.GetX());
+	TL.SetY(origin.TL.GetY());
+	BR.SetX(origin.BR.GetX());
+	BR.SetY(origin.BR.GetY());
 }
 
 
